@@ -1,8 +1,29 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 
-// Correo del usuario logueado
+const router = useRouter()
+
+// Datos del usuario logueado
+const usuarioNombre = ref('Diaz Bascur')
 const usuarioCorreo = ref('diazbascur@gmail.com')
+
+// Estado del modal de confirmación de cierre de sesión
+const mostrarModalCerrarSesion = ref(false)
+
+const abrirModalCerrarSesion = () => {
+  mostrarNotificaciones.value = false
+  mostrarModalCerrarSesion.value = true
+}
+
+const cancelarCerrarSesion = () => {
+  mostrarModalCerrarSesion.value = false
+}
+
+const confirmarCerrarSesion = () => {
+  mostrarModalCerrarSesion.value = false
+  router.push('/')
+}
 
 // Estado del recuadro de notificaciones
 const mostrarNotificaciones = ref(false)
@@ -141,11 +162,11 @@ onUnmounted(() => {
       </li>
     </ul>
 
-    <!-- CORREO DEL USUARIO LOGUEADO (ENCIMA DEL SEPARADOR) -->
+    <!-- NOMBRE DEL USUARIO LOGUEADO (ENCIMA DEL SEPARADOR) -->
     <div class="mb-3 px-2 d-flex align-items-center text-white-50">
       <i class="bi bi-person-circle fs-5 me-2 flex-shrink-0"></i>
-      <span class="small text-truncate" :title="usuarioCorreo">
-        {{ usuarioCorreo }}
+      <span class="small text-truncate" :title="usuarioNombre">
+        {{ usuarioNombre }}
       </span>
     </div>
 
@@ -154,13 +175,14 @@ onUnmounted(() => {
       ref="contenedorNotificaciones"
       class="pt-3 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between gap-2 position-relative"
     >
-      <router-link
-        to="/"
-        class="nav-link text-danger rounded-3 fw-bold px-2 py-2 flex-grow-1 text-truncate"
+      <button
+        @click="abrirModalCerrarSesion"
+        type="button"
+        class="btn btn-link nav-link text-danger rounded-3 fw-bold px-2 py-2 flex-grow-1 text-start text-truncate text-decoration-none"
       >
         <i class="bi bi-box-arrow-right me-2"></i>
         Cerrar Sesión
-      </router-link>
+      </button>
 
       <!-- BOTÓN DE NOTIFICACIONES (SOLO ICONO SIN RECUADRO) -->
       <button
@@ -294,6 +316,64 @@ onUnmounted(() => {
       </div>
     </div>
   </div>
+
+  <!-- MODAL ÚNICO DE CONFIRMACIÓN PARA CERRAR SESIÓN -->
+  <Teleport to="body">
+    <div
+      v-if="mostrarModalCerrarSesion"
+      class="modal d-block"
+      tabindex="-1"
+      style="background: rgba(0, 0, 0, 0.85); z-index: 1070;"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-secondary rounded-4">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+              <i class="bi bi-box-arrow-right text-danger"></i>
+              Cerrar Sesión
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              @click="cancelarCerrarSesion"
+            ></button>
+          </div>
+
+          <div class="modal-body text-center py-4">
+            <p class="fs-5 mb-3">¿Deseas cerrar tu sesión actual?</p>
+
+            <div
+              class="p-3 mb-4 rounded-3 border border-secondary border-opacity-50 d-flex align-items-center gap-3 text-start"
+              style="background-color: #1a1a1a;"
+            >
+              <i class="bi bi-person-circle fs-1 text-white-50 flex-shrink-0"></i>
+              <div class="text-truncate">
+                <p class="fw-bold fs-5 mb-0 text-white text-truncate">{{ usuarioNombre }}</p>
+                <p class="small text-white-50 mb-0 text-truncate">{{ usuarioCorreo }}</p>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3">
+              <button
+                @click="cancelarCerrarSesion"
+                type="button"
+                class="btn btn-outline-light rounded-3 px-4"
+              >
+                Cancelar
+              </button>
+              <button
+                @click="confirmarCerrarSesion"
+                type="button"
+                class="btn btn-danger fw-bold rounded-3 px-4"
+              >
+                <i class="bi bi-box-arrow-right me-1"></i> Sí, Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <style scoped>
