@@ -1,37 +1,175 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import Sidebar from '../components/Sidebar.vue'
 
-// 1. ESTADO REACTIVO CON LOS MOVIMIENTOS INICIALES
+// 1. ESTADO REACTIVO CON LOS MOVIMIENTOS INICIALES (SIN CENTAVOS)
 const movimientos = ref([
-  { id: 1, concepto: 'Suscripción de Internet', tipoPago: 'Tarjeta de Crédito', monto: 45.00, fecha: '14 Sep, 2026' },
-  { id: 2, concepto: 'Compra de Alimentos', tipoPago: 'Efectivo', monto: 120.00, fecha: '13 Sep, 2026' },
-  { id: 3, concepto: 'Gasolina', tipoPago: 'Tarjeta de Débito', monto: 40.00, fecha: '12 Sep, 2026' },
-  { id: 4, concepto: 'Cena Restaurante', tipoPago: 'Tarjeta de Crédito', monto: 65.50, fecha: '11 Sep, 2026' },
-  { id: 5, concepto: 'Suscripción Netflix', tipoPago: 'Tarjeta de Crédito', monto: 15.99, fecha: '10 Sep, 2026' },
-  { id: 6, concepto: 'Servicio de Energía', tipoPago: 'Transferencia', monto: 55.20, fecha: '09 Sep, 2026' },
-  { id: 7, concepto: 'Transporte (Uber)', tipoPago: 'Tarjeta de Crédito', monto: 12.50, fecha: '08 Sep, 2026' },
-  { id: 8, concepto: 'Farmacia', tipoPago: 'Efectivo', monto: 22.40, fecha: '07 Sep, 2026' },
-  { id: 9, concepto: 'Café y Snacks', tipoPago: 'Efectivo', monto: 4.50, fecha: '06 Sep, 2026' },
-  { id: 10, concepto: 'Gimnasio', tipoPago: 'Tarjeta de Débito', monto: 30.00, fecha: '05 Sep, 2026' },
-  { id: 11, concepto: 'Ropa', tipoPago: 'Tarjeta de Crédito', monto: 89.90, fecha: '03 Sep, 2026' },
-  { id: 12, concepto: 'Servicio de Agua', tipoPago: 'Transferencia', monto: 18.20, fecha: '02 Sep, 2026' },
-  { id: 13, concepto: 'Suscripción Spotify', tipoPago: 'Tarjeta de Crédito', monto: 5.99, fecha: '01 Sep, 2026' },
-  { id: 14, concepto: 'Cine', tipoPago: 'Efectivo', monto: 25.00, fecha: '01 Sep, 2026' }
+  { id: 1, concepto: 'Suscripción de Internet', tipoPago: 'Tarjeta de Crédito', monto: 45, fecha: '14 Sep, 2026' },
+  { id: 2, concepto: 'Compra de Alimentos', tipoPago: 'Efectivo', monto: 120, fecha: '13 Sep, 2026' },
+  { id: 3, concepto: 'Gasolina', tipoPago: 'Tarjeta de Débito', monto: 40, fecha: '12 Sep, 2026' },
+  { id: 4, concepto: 'Cena Restaurante', tipoPago: 'Tarjeta de Crédito', monto: 66, fecha: '11 Sep, 2026' },
+  { id: 5, concepto: 'Suscripción Netflix', tipoPago: 'Tarjeta de Crédito', monto: 16, fecha: '10 Sep, 2026' },
+  { id: 6, concepto: 'Servicio de Energía', tipoPago: 'Transferencia', monto: 55, fecha: '09 Sep, 2026' },
+  { id: 7, concepto: 'Transporte (Uber)', tipoPago: 'Tarjeta de Crédito', monto: 13, fecha: '08 Sep, 2026' },
+  { id: 8, concepto: 'Farmacia', tipoPago: 'Efectivo', monto: 22, fecha: '07 Sep, 2026' },
+  { id: 9, concepto: 'Café y Snacks', tipoPago: 'Efectivo', monto: 5, fecha: '06 Sep, 2026' },
+  { id: 10, concepto: 'Gimnasio', tipoPago: 'Tarjeta de Débito', monto: 30, fecha: '05 Sep, 2026' },
+  { id: 11, concepto: 'Ropa', tipoPago: 'Tarjeta de Crédito', monto: 90, fecha: '03 Sep, 2026' },
+  { id: 12, concepto: 'Servicio de Agua', tipoPago: 'Transferencia', monto: 18, fecha: '02 Sep, 2026' },
+  { id: 13, concepto: 'Suscripción Spotify', tipoPago: 'Tarjeta de Crédito', monto: 6, fecha: '01 Sep, 2026' },
+  { id: 14, concepto: 'Cine', tipoPago: 'Efectivo', monto: 25, fecha: '01 Sep, 2026' },
+  { id: 15, concepto: 'Mantenimiento Vehículo', tipoPago: 'Tarjeta de Crédito', monto: 150, fecha: '18 Ago, 2026' },
+  { id: 16, concepto: 'Libros y Cursos', tipoPago: 'Transferencia', monto: 48, fecha: '10 Jul, 2026' },
+  { id: 17, concepto: 'Regalos Navideños', tipoPago: 'Tarjeta de Crédito', monto: 210, fecha: '20 Dic, 2025' }
 ])
 
-// 2. PRESUPUESTO Y CÁLCULOS DINÁMICOS
-const presupuesto = ref(500.00)
+// 2. UTILIDADES DE FECHA PARA FILTROS
+const mesesNombres = [
+  { valor: 0, nombre: 'Enero', abrev: 'ene' },
+  { valor: 1, nombre: 'Febrero', abrev: 'feb' },
+  { valor: 2, nombre: 'Marzo', abrev: 'mar' },
+  { valor: 3, nombre: 'Abril', abrev: 'abr' },
+  { valor: 4, nombre: 'Mayo', abrev: 'may' },
+  { valor: 5, nombre: 'Junio', abrev: 'jun' },
+  { valor: 6, nombre: 'Julio', abrev: 'jul' },
+  { valor: 7, nombre: 'Agosto', abrev: 'ago' },
+  { valor: 8, nombre: 'Septiembre', abrev: 'sep' },
+  { valor: 9, nombre: 'Octubre', abrev: 'oct' },
+  { valor: 10, nombre: 'Noviembre', abrev: 'nov' },
+  { valor: 11, nombre: 'Diciembre', abrev: 'dic' }
+]
+
+const parsearFecha = (fechaStr) => {
+  if (!fechaStr) return null
+  const match = fechaStr.trim().match(/^(\d{1,2})\s+([A-Za-zÁÉÍÓÚáéíóú]+),?\s+(\d{4})$/)
+  if (match) {
+    const dia = parseInt(match[1], 10)
+    const mesAbrev = match[2].slice(0, 3).toLowerCase()
+    const anio = parseInt(match[3], 10)
+    const mesObj = mesesNombres.find(m => m.abrev === mesAbrev)
+    if (mesObj) {
+      return new Date(anio, mesObj.valor, dia)
+    }
+  }
+  const fechaNativa = new Date(fechaStr)
+  return isNaN(fechaNativa.getTime()) ? null : fechaNativa
+}
+
+// 3. ESTADOS DE FILTROS Y ORDENAMIENTO
+const ordenValor = ref('') // '' | 'desc' | 'asc'
+const filtroTipoPago = ref('')
+const filtroMes = ref('')
+const filtroAnio = ref('')
+const filtroUltimosMeses = ref('')
+
+const aniosDisponibles = computed(() => {
+  const anios = new Set()
+  movimientos.value.forEach(m => {
+    const fecha = parsearFecha(m.fecha)
+    if (fecha) anios.add(fecha.getFullYear())
+  })
+  return Array.from(anios).sort((a, b) => b - a)
+})
+
+const hayFiltrosActivos = computed(() => {
+  return (
+    ordenValor.value !== '' ||
+    filtroTipoPago.value !== '' ||
+    filtroMes.value !== '' ||
+    filtroAnio.value !== '' ||
+    filtroUltimosMeses.value !== ''
+  )
+})
+
+const limpiarFiltros = () => {
+  ordenValor.value = ''
+  filtroTipoPago.value = ''
+  filtroMes.value = ''
+  filtroAnio.value = ''
+  filtroUltimosMeses.value = ''
+  limiteVisible.value = INCREMENTO_PAGINA
+}
+
+// Lista filtrada y ordenada
+const movimientosFiltrados = computed(() => {
+  const ahora = new Date()
+
+  let resultado = movimientos.value.filter(m => {
+    // Filtro por tipo de pago
+    if (filtroTipoPago.value && m.tipoPago !== filtroTipoPago.value) {
+      return false
+    }
+
+    const fechaObj = parsearFecha(m.fecha)
+
+    // Filtro por mes
+    if (filtroMes.value !== '') {
+      if (!fechaObj || fechaObj.getMonth() !== Number(filtroMes.value)) {
+        return false
+      }
+    }
+
+    // Filtro por año
+    if (filtroAnio.value !== '') {
+      if (!fechaObj || fechaObj.getFullYear() !== Number(filtroAnio.value)) {
+        return false
+      }
+    }
+
+    // Filtro por últimos X meses
+    if (filtroUltimosMeses.value !== '') {
+      if (!fechaObj) return false
+      const fechaLimite = new Date(ahora.getFullYear(), ahora.getMonth() - Number(filtroUltimosMeses.value), ahora.getDate())
+      if (fechaObj < fechaLimite) {
+        return false
+      }
+    }
+
+    return true
+  })
+
+  // Ordenar por valor
+  if (ordenValor.value === 'desc') {
+    resultado = [...resultado].sort((a, b) => b.monto - a.monto)
+  } else if (ordenValor.value === 'asc') {
+    resultado = [...resultado].sort((a, b) => a.monto - b.monto)
+  }
+
+  return resultado
+})
+
+// 4. PAGINACIÓN ("CARGAR MÁS")
+const INCREMENTO_PAGINA = 8
+const limiteVisible = ref(INCREMENTO_PAGINA)
+
+watch([ordenValor, filtroTipoPago, filtroMes, filtroAnio, filtroUltimosMeses], () => {
+  limiteVisible.value = INCREMENTO_PAGINA
+})
+
+const movimientosVisibles = computed(() => {
+  return movimientosFiltrados.value.slice(0, limiteVisible.value)
+})
+
+const restantesPorCargar = computed(() => {
+  return Math.max(0, movimientosFiltrados.value.length - limiteVisible.value)
+})
+
+const cargarMas = () => {
+  limiteVisible.value += INCREMENTO_PAGINA
+}
+
+// 5. PRESUPUESTO Y CÁLCULOS DINÁMICOS (SIN CENTAVOS)
+const presupuesto = ref(500)
 
 const totalPagado = computed(() => {
-  return movimientos.value.reduce((total, m) => total + m.monto, 0)
+  return movimientosFiltrados.value.reduce((total, m) => total + Math.round(m.monto), 0)
 })
 
 const disponible = computed(() => {
-  return presupuesto.value - totalPagado.value
+  return Math.round(presupuesto.value) - totalPagado.value
 })
 
-// 3. LÓGICA DE EDICIÓN (MODAL EN PANTALLA)
+// 6. LÓGICA DE EDICIÓN (MODAL EN PANTALLA)
 const movimientoEditando = ref(null)
 const formEdit = ref({
   concepto: '',
@@ -42,7 +180,10 @@ const formEdit = ref({
 
 const iniciarEdicion = (mov) => {
   movimientoEditando.value = mov.id
-  formEdit.value = { ...mov }
+  formEdit.value = {
+    ...mov,
+    monto: Math.round(mov.monto)
+  }
 }
 
 const cancelarEdicion = () => {
@@ -56,14 +197,14 @@ const guardarEdicion = () => {
       id: movimientoEditando.value,
       concepto: formEdit.value.concepto,
       tipoPago: formEdit.value.tipoPago,
-      monto: Number(formEdit.value.monto),
+      monto: Math.round(Number(formEdit.value.monto)),
       fecha: formEdit.value.fecha
     }
   }
   cancelarEdicion()
 }
 
-// 4. LÓGICA DE DOBLE CONFIRMACIÓN DE ELIMINACIÓN
+// 7. LÓGICA DE DOBLE CONFIRMACIÓN DE ELIMINACIÓN
 // pasodeEliminacion: 0 = inactivo, 1 = Primera confirmación, 2 = Segunda confirmación
 const pasodeEliminacion = ref(0)
 const movimientoAEliminar = ref(null)
@@ -106,8 +247,89 @@ const cancelarEliminacion = () => {
         </div>
 
         <hr class="mb-4">
-        <div class="mb-4">
-          <h3 class="fw-bold">Historial de Movimientos</h3>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <h3 class="fw-bold mb-0">Historial de Movimientos</h3>
+          <span class="badge bg-secondary">
+            Mostrando {{ movimientosVisibles.length }} de {{ movimientosFiltrados.length }} movimientos
+          </span>
+        </div>
+
+        <!-- BARRA DE FILTROS Y ORDENAMIENTO -->
+        <div class="p-3 mb-4 rounded-4 border border-secondary border-opacity-25" style="background-color: #1a1a1a;">
+          <div class="row g-3 align-items-end">
+            <!-- Ordenar por valor -->
+            <div class="col-sm-6 col-md-4 col-lg-2">
+              <label class="form-label text-white-50 small mb-1">Ordenar por valor</label>
+              <select v-model="ordenValor" class="form-select form-select-sm bg-dark text-white border-secondary">
+                <option value="">Más recientes</option>
+                <option value="desc">Mayor a menor ($)</option>
+                <option value="asc">Menor a mayor ($)</option>
+              </select>
+            </div>
+
+            <!-- Filtrar por tipo de pago -->
+            <div class="col-sm-6 col-md-4 col-lg-3">
+              <label class="form-label text-white-50 small mb-1">Tipo de pago</label>
+              <select v-model="filtroTipoPago" class="form-select form-select-sm bg-dark text-white border-secondary">
+                <option value="">Todos los tipos</option>
+                <option value="Tarjeta de Crédito">Tarjeta de Crédito</option>
+                <option value="Tarjeta de Débito">Tarjeta de Débito</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+              </select>
+            </div>
+
+            <!-- Filtrar por mes -->
+            <div class="col-sm-6 col-md-4 col-lg-2">
+              <label class="form-label text-white-50 small mb-1">Mes</label>
+              <select v-model="filtroMes" class="form-select form-select-sm bg-dark text-white border-secondary">
+                <option value="">Todos</option>
+                <option v-for="mes in mesesNombres" :key="mes.valor" :value="mes.valor">
+                  {{ mes.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Filtrar por año -->
+            <div class="col-sm-6 col-md-4 col-lg-2">
+              <label class="form-label text-white-50 small mb-1">Año</label>
+              <select v-model="filtroAnio" class="form-select form-select-sm bg-dark text-white border-secondary">
+                <option value="">Todos</option>
+                <option v-for="anio in aniosDisponibles" :key="anio" :value="anio">
+                  {{ anio }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Filtrar por últimos X meses -->
+            <div class="col-sm-6 col-md-4 col-lg-2">
+              <label class="form-label text-white-50 small mb-1">Período reciente</label>
+              <select v-model="filtroUltimosMeses" class="form-select form-select-sm bg-dark text-white border-secondary">
+                <option value="">Cualquier fecha</option>
+                <option value="1">Último mes</option>
+                <option value="2">Últimos 2 meses</option>
+                <option value="3">Últimos 3 meses</option>
+                <option value="6">Últimos 6 meses</option>
+                <option value="12">Últimos 12 meses</option>
+              </select>
+            </div>
+
+            <!-- Botón limpiar filtros -->
+            <div class="col-sm-6 col-md-4 col-lg-1 d-grid">
+              <button 
+                @click="limpiarFiltros" 
+                type="button" 
+                class="btn btn-sm fw-bold rounded-3"
+                :class="hayFiltrosActivos ? 'text-white' : 'btn-outline-secondary'"
+                :style="hayFiltrosActivos ? 'background-color: #FF5722;' : ''"
+                :disabled="!hayFiltrosActivos"
+                title="Limpiar todos los filtros"
+              >
+                <i class="bi bi-arrow-counterclockwise"></i> Limpiar
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- TABLA DE HISTORIAL DE MOVIMIENTOS -->
@@ -124,10 +346,10 @@ const cancelarEliminacion = () => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="movimiento in movimientos" :key="movimiento.id">
+                <tr v-for="movimiento in movimientosVisibles" :key="movimiento.id">
                   <td class="p-3">{{ movimiento.concepto }}</td>
                   <td class="p-3"><span class="badge bg-secondary">{{ movimiento.tipoPago }}</span></td>
-                  <td class="p-3 fw-bold">${{ movimiento.monto.toFixed(2) }}</td>
+                  <td class="p-3 fw-bold">${{ Math.round(movimiento.monto) }}</td>
                   <td class="p-3 text-white-50">{{ movimiento.fecha }}</td>
                   <td class="p-3 text-end">
                     <button @click="iniciarEdicion(movimiento)" class="btn btn-sm btn-outline-light me-1" title="Editar">
@@ -138,13 +360,28 @@ const cancelarEliminacion = () => {
                     </button>
                   </td>
                 </tr>
-                <tr v-if="movimientos.length === 0">
+                <tr v-if="movimientosVisibles.length === 0">
                   <td colspan="5" class="p-4 text-center text-white-50">
-                    No hay movimientos registrados en tu historial.
+                    No se encontraron movimientos con los filtros seleccionados.
                   </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- BOTÓN CARGAR MÁS AL FINAL DE LA TABLA -->
+          <div 
+            v-if="restantesPorCargar > 0" 
+            class="p-3 text-center border-top border-secondary border-opacity-25" 
+            style="background-color: #1a1a1a;"
+          >
+            <button 
+              @click="cargarMas" 
+              type="button" 
+              class="btn btn-outline-light rounded-pill px-4 fw-bold"
+            >
+              <i class="bi bi-plus-circle me-1"></i> Cargar más ({{ restantesPorCargar }} restantes)
+            </button>
           </div>
         </div>
 
@@ -152,15 +389,15 @@ const cancelarEliminacion = () => {
         <div class="row g-3 mb-4">
           <div class="col-md-4">
             <div class="p-3 rounded-4 border border-secondary border-opacity-25 text-center" style="background-color: #1a1a1a;">
-              <p class="text-white-50 small mb-1">Total Pagado (Últimos 30 días)</p>
-              <h4 class="fw-bold mb-0">${{ totalPagado.toFixed(2) }}</h4>
+              <p class="text-white-50 small mb-1">Total Pagado (Filtrado)</p>
+              <h4 class="fw-bold mb-0">${{ Math.round(totalPagado) }}</h4>
             </div>
           </div>
 
           <div class="col-md-4">
             <div class="p-3 rounded-4 border border-secondary border-opacity-25 text-center" style="background-color: #1a1a1a;">
               <p class="text-white-50 small mb-1">Presupuesto</p>
-              <h4 class="fw-bold mb-0">${{ presupuesto.toFixed(2) }}</h4>
+              <h4 class="fw-bold mb-0">${{ Math.round(presupuesto) }}</h4>
             </div>
           </div>
 
@@ -168,7 +405,7 @@ const cancelarEliminacion = () => {
             <div class="p-3 rounded-4 border border-secondary border-opacity-25 text-center" style="background-color: #1a1a1a;">
               <p class="text-white-50 small mb-1">Disponible</p>
               <h4 class="fw-bold mb-0" :style="{ color: disponible < 0 ? '#dc3545' : '#FF5722' }">
-                ${{ disponible.toFixed(2) }}
+                ${{ Math.round(disponible) }}
               </h4>
             </div>
           </div>
@@ -204,7 +441,7 @@ const cancelarEliminacion = () => {
             </div>
             <div class="mb-3">
               <label class="form-label text-white-50 small">Monto ($)</label>
-              <input v-model.number="formEdit.monto" type="number" step="0.01" min="0.01" class="form-control bg-dark text-white border-secondary" required>
+              <input v-model.number="formEdit.monto" type="number" step="1" min="1" class="form-control bg-dark text-white border-secondary" required>
             </div>
             <div class="mb-3">
               <label class="form-label text-white-50 small">Fecha</label>
@@ -242,7 +479,7 @@ const cancelarEliminacion = () => {
             <div class="d-flex justify-content-between">
               <div>
                 <span class="text-white-50 small">Monto: </span>
-                <span class="fw-bold text-danger">${{ movimientoAEliminar?.monto.toFixed(2) }}</span>
+                <span class="fw-bold text-danger">${{ Math.round(movimientoAEliminar?.monto || 0) }}</span>
               </div>
               <div>
                 <span class="text-white-50 small">Fecha: </span>
